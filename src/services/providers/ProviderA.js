@@ -1,4 +1,4 @@
-// MockProviderA JS
+// ProviderA JS
 class ProviderA {
   async send(email) {
     const success = Math.random() > 0.3;
