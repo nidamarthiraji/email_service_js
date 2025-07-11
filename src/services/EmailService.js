@@ -17,17 +17,17 @@ class EmailService {
 
   async send(email) {
     const id = email.idempotencyKey;
-
+     //idempotency check
     if (this.sentEmails.has(id)) {
       this.logger.log('Duplicate email. Skipping...');
       return { success: false, reason: 'Duplicate email (idempotent)' };
     }
-
+    //Rate Limiter check
     if (!this.rateLimiter.allow()) {
       this.logger.log('Rate limit exceeded.');
       return { success: false, reason: 'Rate limit exceeded' };
     }
-
+    //
     let result = await this._trySendWithProvider(mailgunProvider, email, this.mailgunCircuit);
 
     if (!result.success) {
@@ -45,7 +45,7 @@ class EmailService {
       attempts: result.attempts || 1,
     };
   }
-
+// Circuit breaker
   async _trySendWithProvider(provider, email, circuitBreaker = null) {
     let attempt = 0;
     let delay = 500;
@@ -71,7 +71,7 @@ class EmailService {
         this.logger.log(`Attempt ${attempt} failed: ${err.message}`);
         if (circuitBreaker) circuitBreaker.fail();
         await new Promise((r) => setTimeout(r, delay));
-        delay *= 2; // exponential backoff
+        delay *= 2; // exponential backoff   retry logic
       }
     }
 
