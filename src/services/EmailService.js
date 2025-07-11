@@ -6,10 +6,13 @@ const Logger = require('../utils/Logger');
 
 class EmailService {
   constructor() {
-    this.sentEmails = new Set(); // idempotency
-    this.rateLimiter = new RateLimiter(5, 60 * 1000); // 5 emails per 60s
+    // idempotency
+    this.sentEmails = new Set(); 
+     // 5 emails per 60s
+    this.rateLimiter = new RateLimiter(5, 60 * 1000);
     this.logger = new Logger();
-    this.mailgunCircuit = new CircuitBreaker(3, 10000); // trip after 3 fails, wait 10s
+    // trip after 3 fails, wait 10s
+    this.mailgunCircuit = new CircuitBreaker(3, 10000); 
   }
 
   async send(email) {
