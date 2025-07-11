@@ -58,11 +58,7 @@ email-service-js1/
 │       └── Logger.js
 ├── tests/
 
-│   └── EmailService.test.js       
-
-├── .env     
-
-├── .gitignore     
+│   └── EmailService.test.js        
 
 ├── package.json
 
