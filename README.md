@@ -34,7 +34,6 @@ A resilient and fault-tolerant **Email Sending Service** built using **JavaScrip
 ---
 
 ## Folder Structure
-
 email-service-js1/
 ├── src/
 
@@ -42,33 +41,33 @@ email-service-js1/
 
 │   ├── services/
 
-│   │   └── EmailService.js   
-
-        ├── RateLimiter.js     
+│   │   └── EmailService.js  
 
 │   ├── providers/
 
 │   │   ├── mailgunProvider.js  
 
-│   │   └── awsProvider.js 
+│   │   └── awsProvider.js  
 
 │   └── utils/
-│       
-│       ├── CircuitBreaker.js           
 
-│       └── Logger.js                   
+│       ├── RateLimiter.js     
 
+│       ├── CircuitBreaker.js
+
+│       └── Logger.js
 ├── tests/
 
-│   └── EmailService.test.js            
+│   └── EmailService.test.js       
 
-├── .env                                
+├── .env     
 
-├── .gitignore                        
+├── .gitignore     
 
-├── package.json                        
+├── package.json
 
-├── README.md   
+├── README.md
+
 
 
 
