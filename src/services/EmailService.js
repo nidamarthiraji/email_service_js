@@ -1,6 +1,6 @@
 // EmailService logic in JavaScript
 const { mailgunProvider, awsProvider } = require('./providers');
-const RateLimiter = require('../services/RateLimiter');
+const RateLimiter = require('../utils/RateLimiter');
 const CircuitBreaker = require('../utils/CircuitBreaker');
 const Logger = require('../utils/Logger');
 
