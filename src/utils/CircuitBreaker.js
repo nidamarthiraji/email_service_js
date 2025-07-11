@@ -1,44 +1,38 @@
 class CircuitBreaker {
-  constructor(failureThreshold = 3, cooldownTime = 10000) {
+  constructor(failureThreshold, recoveryTime) {
     this.failureThreshold = failureThreshold;
-    this.cooldownTime = cooldownTime;
+    this.recoveryTime = recoveryTime;
     this.failureCount = 0;
-    this.state = 'CLOSED';
     this.lastFailureTime = null;
+    this.open = false;
   }
 
-  async exec(fn) {
-    if (this.state === 'OPEN') {
-      const now = Date.now();
-      if (now - this.lastFailureTime > this.cooldownTime) {
-        this.state = 'HALF_OPEN';
-      } else {
-        throw new Error('Circuit is open. Please wait.');
-      }
+  allow() {
+    if (!this.open) return true;
+
+    const now = Date.now();
+    if (now - this.lastFailureTime >= this.recoveryTime) {
+      this.open = false;
+      this.failureCount = 0;
+      return true;
     }
 
-    try {
-      const result = await fn();
-      this.reset();
-      return result;
-    } catch (error) {
-      this.failureCount++;
-      this.lastFailureTime = Date.now();
-
-      if (this.failureCount >= this.failureThreshold) {
-        this.state = 'OPEN';
-        console.log('Circuit opened! Too many failures.');
-      }
-
-      throw error;
-    }
+    return false;
   }
 
-  reset() {
+  success() {
     this.failureCount = 0;
-    this.state = 'CLOSED';
-    this.lastFailureTime = null;
+    this.open = false;
+  }
+
+  fail() {
+    this.failureCount++;
+    this.lastFailureTime = Date.now();
+
+    if (this.failureCount >= this.failureThreshold) {
+      this.open = true;
+    }
   }
 }
 
-module.exports = { CircuitBreaker };
+module.exports = CircuitBreaker;

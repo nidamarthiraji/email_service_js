@@ -1,4 +1,6 @@
 //console.log('Email Service running...');
+const dotenv = require('dotenv');
+dotenv.config();
 const { EmailService } = require('./services/EmailService');
 
 const service = new EmailService();

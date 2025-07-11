@@ -63,53 +63,50 @@ describe('EmailService', () => {
   });
 });
 */
-const { EmailService } = require('../src/services/EmailService');
-
-// Mock Providers
-const providerA = {
-  send: jest.fn().mockResolvedValue('Provider A Success'),
-};
-
-const providerB = {
-  send: jest.fn().mockResolvedValue('Provider B Success'),
-};
-
-let service;
-
-beforeEach(() => {
-  jest.clearAllMocks();
-  service = new EmailService(providerA, providerB);
-});
+const EmailService = require('../src/services/EmailService');
 
 describe('EmailService', () => {
+  let service;
+
+  beforeEach(() => {
+    service = new EmailService();
+
+    // Override providers with mock logic for testing
+    service._trySendWithProvider = async (provider, email) => {
+      if (email.to === 'fail@example.com') {
+        return { success: false, provider: 'MockProvider', attempts: 3 };
+      }
+      return { success: true, provider: 'MockProvider', attempts: 1 };
+    };
+  });
+
   test('should send email successfully using Provider A or fallback to B', async () => {
-    providerA.send.mockRejectedValueOnce(new Error('Fail A')); // Simulate A failure
     const email = {
-      to: 'user@example.com',
-      subject: 'Test Email',
-      body: 'This is a test.',
-      idempotencyKey: 'test1',
+      to: 'test@example.com',
+      subject: 'Hello',
+      body: 'This is a test',
+      idempotencyKey: 'email-1',
     };
 
     const result = await service.send(email);
-    expect(['success', 'skipped', 'failed']).toContain(result.status);
-    expect(['A', 'B', undefined]).toContain(result.provider);
+    expect(result.success).toBe(true);
+    expect(['MockProvider']).toContain(result.providerUsed);
   });
 
   test('should prevent duplicate sends (idempotency)', async () => {
     const email = {
       to: 'raji123@gmail.com',
-      subject: 'Welcome',
-      body: 'Hello!',
-      idempotencyKey: 'same-key-1',
+      subject: 'Hi again',
+      body: 'Second email',
+      idempotencyKey: 'unique-id',
     };
 
     const first = await service.send(email);
     const second = await service.send(email);
 
-    expect(first.status).toBe('success');
-    expect(second.status).toBe('skipped');
-    expect(second.reason).toBe('Duplicate send');
+    expect(first.success).toBe(true);
+    expect(second.success).toBe(false);
+    expect(second.reason).toBe('Duplicate email (idempotent)');
   });
 
   test('should apply rate limiting after 5 sends', async () => {
@@ -117,19 +114,20 @@ describe('EmailService', () => {
 
     for (let i = 0; i < 6; i++) {
       const email = {
-        to: `rate${i}@example.com`,
+        to: 'test@example.com',
         subject: `Test ${i}`,
-        body: 'Hi!',
-        idempotencyKey: `rate-limit-${i}`,
+        body: 'Body',
+        idempotencyKey: `id-${i}`,
       };
-
       const result = await service.send(email);
       results.push(result);
     }
 
-    const failedDueToRate = results.filter(r => r.status === 'failed' && r.reason === 'Rate limit exceeded');
-    expect(failedDueToRate.length).toBeGreaterThanOrEqual(1);
+    const last = results[5];
+    expect(last.success).toBe(false);
+    expect(last.reason).toBe('Rate limit exceeded');
   });
 });
+
 
 

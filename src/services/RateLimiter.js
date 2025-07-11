@@ -1,25 +1,22 @@
 // Rate limiter in JS
 class RateLimiter {
-  constructor(maxPerMinute) {
-    this.max = maxPerMinute;
-    this.tokens = maxPerMinute;
-    this.lastRefill = Date.now();
+  constructor(limit, interval) {
+    this.limit = limit;
+    this.interval = interval;
+    this.timestamps = [];
   }
 
   allow() {
     const now = Date.now();
-    if (now - this.lastRefill > 60000) {
-      this.tokens = this.max;
-      this.lastRefill = now;
-    }
+    this.timestamps = this.timestamps.filter(t => now - t < this.interval);
 
-    if (this.tokens > 0) {
-      this.tokens--;
+    if (this.timestamps.length < this.limit) {
+      this.timestamps.push(now);
       return true;
     }
+
     return false;
   }
 }
 
-module.exports = { RateLimiter };
-
+module.exports = RateLimiter;
